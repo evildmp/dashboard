@@ -10,7 +10,9 @@ from django.contrib.auth.decorators import permission_required
 from django.contrib import messages
 from django.urls import reverse
 from django.utils import timezone
+
 from django.utils.text import slugify
+import bleach
 
 from dashboard.auth_decorators import ConditionalLoginRequiredMixin, conditional_login_required
 
@@ -287,6 +289,38 @@ def project_basic_form_save(request, project_id):
     )
 
 
+@permission_required("projects.change_projectobjectivecondition")
+@require_http_methods(["GET"])
+def action_condition_note_dialog(request, condition_id):
+    if request.GET.get("close") == "1":
+        return HttpResponse('<div id="note-dialog-root"></div>')
+
+    condition = ProjectObjectiveCondition.objects.get(id=condition_id)
+    return render(
+        request,
+        "projects/partial_project_detail_condition_note_dialog.html",
+        {"condition": condition},
+    )
+
+
+@permission_required("projects.change_projectobjectivecondition")
+@require_http_methods(["PUT"])
+def action_update_condition_note(request, condition_id):
+
+    condition = ProjectObjectiveCondition.objects.get(id=condition_id)
+    note = QueryDict(request.body).get("note", "")
+    # Sanitize note input using bleach
+    allowed_tags = ["a", "strong", "em", "p", "ul", "li", "br"]
+    allowed_attrs = {"a": ["href", "target"]}
+    cleaned_note = bleach.clean(note, tags=allowed_tags, attributes=allowed_attrs, strip=True)
+    condition.note = cleaned_note
+    condition.save(update_fields=["note"])
+
+    return render(
+        request,
+        "projects/partial_project_detail_condition_note_update.html",
+        {"condition": condition, "workcycle_count": WorkCycle.objects.count()},
+    )
 # admin methods
 
 @staff_member_required

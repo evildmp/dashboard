@@ -410,9 +410,130 @@ table.objectives td.no-activity {outline: 1px solid black;}
 tr.condition.candidate span.condition.candidate {color: orange;}
 tr.condition.not-applicable span.condition.not-applicable {color: orange;}
 
-tr.condition.not-applicable .condition.name {color: #bbb; text-decoration: line-through;}
+tr.condition.not-applicable .condition.name .condition-text {color: #bbb; text-decoration: line-through;}
 
 tr.condition span.condition.has-perms:hover {
 	cursor: default;
 	border-radius: 999em; outline: 1px solid orange;
+}
+
+.attributes .condition-note-wrap {
+	margin-left: 1em;
+	display: inline-block;
+	position: relative;
+}
+
+.attributes .condition.note.has-note { color: orange; }
+
+.attributes .condition-note-wrap.has-note .condition.note {
+	color: orange;
+}
+
+.condition-note-preview {
+	display: none;
+	position: absolute;
+	left: 50%;
+	top: calc(100% + 6px);
+	transform: translateX(-50%);
+	min-width: 220px;
+	max-width: 420px;
+	padding: 0.55rem 0.65rem;
+	background: #fff;
+	color: #222;
+	border: 1px solid #cfe4c6;
+	border-radius: 8px;
+	box-shadow: 0 8px 20px rgb(0 0 0 / 15%);
+	white-space: normal;
+	text-align: left;
+	z-index: 120;
+	pointer-events: none;
+}
+
+.attributes .condition-note-wrap:hover .condition-note-preview {
+	display: block;
+}
+
+.condition-note-preview p { margin: 0; }
+
+.condition-note-preview ul,
+.condition-note-preview ol {
+	margin: 0.2rem 0 0.2rem 1rem;
+	padding: 0;
+}
+
+.note-dialog-overlay {
+	position: fixed;
+	inset: 0;
+	background: rgb(0 0 0 / 35%);
+	display: grid;
+	place-items: center;
+	padding: 1rem;
+	z-index: 150;
+}
+
+.note-dialog {
+	width: min(560px, 100%);
+	background: #fff;
+	border: 1px solid #d9ead3;
+	border-radius: 8px;
+	padding: 0.85rem;
+	box-shadow: 0 12px 30px rgb(0 0 0 / 20%);
+}
+
+.note-dialog h3 { margin: 0 0 0.5rem; }
+
+.note-dialog-condition {
+	margin-bottom: 0.6rem;
+	font-size: 0.95rem;
+}
+
+.note-dialog-form {
+	display: grid;
+	gap: 0.4rem;
+}
+
+.note-dialog-form textarea {
+	width: 100%;
+	box-sizing: border-box;
+	padding: 0.45rem 0.55rem;
+	border: 1px solid #cfe4c6;
+	border-radius: 6px;
+	font: inherit;
+	line-height: 1.35;
+	resize: vertical;
+}
+
+.note-dialog-actions {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 0.4rem;
+}
+
+.note-dialog-actions-main {
+	display: flex;
+	justify-content: flex-end;
+	gap: 0.4rem;
+}
+
+.note-dialog-actions button {
+	padding: 0.4rem 0.8rem;
+	border-radius: 6px;
+	border: 1px solid #93c47d;
+	background: #d9ead3;
+	color: #103847;
+	font: inherit;
+	cursor: pointer;
+}
+
+.note-dialog-delete {
+	border-color: #d08f8f;
+	background: #f5d6d6;
+	color: #6b1f1f;
+}
+
+.note-dialog-actions button.note-dialog-save {
+	border: 2px solid #2f6120;
+	background: #eef7ea;
+	font-weight: 600;
 }

@@ -1,5 +1,4 @@
 from datetime import date, timedelta
-import logging
 
 from django.conf import settings
 from django.db import models
@@ -16,10 +15,6 @@ from framework.models import (
     AgreementStatus,
     WorkCycle,
 )
-
-logger = logging.getLogger(__name__)
-
-
 class ProjectGroup(models.Model):
     name = models.CharField(max_length=200, unique=True)
 
@@ -150,7 +145,6 @@ class ProjectObjective(models.Model):
 
     @cached_property
     def achieved_level(self):
-        logger.debug("Calculating level for %s", repr(self))
         levels = (
             Level.objects.filter(condition__objective=self.objective)
             .distinct()
@@ -206,6 +200,7 @@ class ProjectObjectiveCondition(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     objective = models.ForeignKey(Objective, on_delete=models.CASCADE)
     condition = models.ForeignKey(Condition, on_delete=models.CASCADE)
+    note = models.TextField(max_length=400, default="", blank=True)
 
     STATUS_CHOICES = {
         "NA": "not-applicable",

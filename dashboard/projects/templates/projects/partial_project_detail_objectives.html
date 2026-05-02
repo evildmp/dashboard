@@ -42,7 +42,7 @@
       </tr>
 
       {% for condition in condition.list %}
-        {% include "projects/partial_project_detail_condition.html" %}
+        {% include "projects/partial_project_detail_condition.html" with swap_oob=False %}
       {% endfor %}
 
     {% endfor %}

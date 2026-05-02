@@ -5,6 +5,8 @@ from .views import (
     project,
     action_toggle_commitment,
     action_toggle_condition,
+    action_condition_note_dialog,
+    action_update_condition_note,
     action_select_reason,
     project_basic_form_save,
     status_projects_commitment,
@@ -33,6 +35,16 @@ urlpatterns = [
         "action_toggle_condition/<int:condition_id>",
         action_toggle_condition,
         name="action_toggle_condition",
+    ),
+    path(
+        "action_condition_note_dialog/<int:condition_id>",
+        action_condition_note_dialog,
+        name="action_condition_note_dialog",
+    ),
+    path(
+        "action_update_condition_note/<int:condition_id>",
+        action_update_condition_note,
+        name="action_update_condition_note",
     ),
     path(
         "action_select_reason/<str:projectobjective_id>",

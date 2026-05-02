@@ -1,0 +1,52 @@
+<div id="note-dialog-root" class="note-dialog-overlay"
+  hx-get="{% url 'projects:action_condition_note_dialog' condition.id %}?close=1"
+  hx-target="#note-dialog-root"
+  hx-swap="outerHTML"
+  hx-trigger="click[!event.target.closest('.note-dialog')]">
+  <div class="note-dialog" role="dialog" aria-modal="true" aria-labelledby="condition-note-title">
+    <h3 id="condition-note-title">Edit condition note</h3>
+    <div class="note-dialog-condition">{{ condition.name|safe }}</div>
+
+    <form
+      class="note-dialog-form"
+      hx-target="#note-dialog-root"
+      hx-swap="outerHTML"
+    >
+      <label for="condition-note-{{ condition.id }}">Note</label>
+      <textarea
+        id="condition-note-{{ condition.id }}"
+        data-note-editor="tinymce"
+        name="note"
+        maxlength="400"
+        rows="5"
+      >{{ condition.note }}</textarea>
+
+      <div class="note-dialog-actions">
+        <button
+          type="button"
+          class="note-dialog-delete"
+          hx-put="{% url 'projects:action_update_condition_note' condition.id %}"
+          hx-vals='{"note": ""}'
+          hx-target="#note-dialog-root"
+          hx-swap="outerHTML"
+        >Delete</button>
+        <div class="note-dialog-actions-main">
+          <button
+            type="button"
+            hx-get="{% url 'projects:action_condition_note_dialog' condition.id %}?close=1"
+            hx-target="#note-dialog-root"
+            hx-swap="outerHTML"
+          >Cancel</button>
+          <button
+            type="button"
+            class="note-dialog-save"
+            hx-put="{% url 'projects:action_update_condition_note' condition.id %}"
+            hx-include="closest form"
+            hx-target="#note-dialog-root"
+            hx-swap="outerHTML"
+          >Save</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

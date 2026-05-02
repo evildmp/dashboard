@@ -232,9 +232,9 @@ TINYMCE_DEFAULT_CONFIG = {
     "width": 600,
     "height": 75,
     "menubar": False,
-    "plugins": "autolink,lists,link,pastehelp",
+    "plugins": "autolink,lists,link",
     "toolbar": False,
     "statusbar": False,
-    "valid_elements": "a[href|target=_blank],strong,em,p,ul,ol,li",
+    "valid_elements": "a[href|target=_blank],strong,em,p,ul,li,br",
     "content_style": "body { font-size: 13px; margin: 4px; }",
 }

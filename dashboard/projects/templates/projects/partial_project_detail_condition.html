@@ -1,4 +1,6 @@
 <tr
+  id="condition-{{ condition.id }}"
+  {% if swap_oob %}hx-swap-oob="outerHTML"{% endif %}
   class="
     condition
     {{ condition.get_status_display }}
@@ -24,24 +26,38 @@
     <div class="condition-layout">
       <div class="condition-text">{{ condition.name|safe }}</div>
       <div class="attributes">
-      <span
-        {% if not perms.projects.change_projectobjectivecondition %}
-          class="condition not-applicable"
-        {% else %}
-          class="condition not-applicable has-perms"
-        hx-put="{% url 'projects:action_toggle_condition' condition.id %}{% querystring status=condition.status target='not-applicable' %}"
-          hx-target="closest tr"
-          hx-swap="outerHTML"
-        {% endif %}>na</span>
-      <span
-        {% if not perms.projects.change_projectobjectivecondition %}
-          class="condition candidate"
-        {% else %}
-          class="condition candidate has-perms"
-        hx-put="{% url 'projects:action_toggle_condition' condition.id %}{% querystring status=condition.status target='candidate' %}"
-          hx-target="closest tr"
-          hx-swap="outerHTML"
-      {% endif %}>candidate</span>
+        <div class="condition-note-wrap{% if condition.note %} has-note{% endif %}">
+          <span
+            {% if not perms.projects.change_projectobjectivecondition %}
+              class="condition note{% if condition.note %} has-note{% endif %}"
+            {% else %}
+              class="condition note{% if condition.note %} has-note{% endif %} has-perms"
+              hx-get="{% url 'projects:action_condition_note_dialog' condition.id %}"
+              hx-target="#note-dialog-root"
+              hx-swap="outerHTML"
+            {% endif %}>note</span>
+          {% if condition.note %}
+            <div class="condition-note-preview">{{ condition.note|safe }}</div>
+          {% endif %}
+        </div>
+        <span
+          {% if not perms.projects.change_projectobjectivecondition %}
+            class="condition not-applicable"
+          {% else %}
+            class="condition not-applicable has-perms"
+          hx-put="{% url 'projects:action_toggle_condition' condition.id %}{% querystring status=condition.status target='not-applicable' %}"
+            hx-target="closest tr"
+            hx-swap="outerHTML"
+          {% endif %}>na</span>
+        <span
+          {% if not perms.projects.change_projectobjectivecondition %}
+            class="condition candidate"
+          {% else %}
+            class="condition candidate has-perms"
+          hx-put="{% url 'projects:action_toggle_condition' condition.id %}{% querystring status=condition.status target='candidate' %}"
+            hx-target="closest tr"
+            hx-swap="outerHTML"
+        {% endif %}>candidate</span>
       </div>
     </div>
   </td>

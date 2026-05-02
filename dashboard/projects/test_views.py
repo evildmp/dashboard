@@ -3,10 +3,8 @@ from urllib.parse import parse_qs, urlparse
 
 from django.test import override_settings
 from django.urls import reverse
-from django.contrib.auth.models import Permission, User
+from django.utils import timezone
 
-from framework.models import Condition, Level, Objective, ObjectiveGroup, Reason, WorkCycle
-from projects.models import Commitment, Project, ProjectObjective, ProjectObjectiveCondition
 
 from framework.models import (
     Condition,
@@ -219,7 +217,6 @@ def test_project_basic_form_save_does_not_set_updated_fields_when_only_non_revie
 def test_project_basic_form_save_preserves_existing_stamp_when_non_review_field_changes(
     client, user_can_change_project, project
 ):
-    from django.utils import timezone
     original_time = timezone.now()
     project.updated_by = user_can_change_project
     project.updated_at = original_time
@@ -413,6 +410,153 @@ def test_action_select_reason_allows_authorized_put_and_sets_reason(
     project_objective.refresh_from_db()
     assert response.status_code == 200
     assert project_objective.unstarted_reason_id == reason.id
+
+
+@pytest.mark.django_db
+def test_action_condition_note_dialog_denies_user_without_permission(
+    client, user_without_permissions, project_objective_condition
+):
+    url = reverse(
+        "projects:action_condition_note_dialog", args=[project_objective_condition.id]
+    )
+    response = client.get(url)
+
+    assert response.status_code == 302
+    expected_redirect = f"{reverse('login')}?next={url}"
+    assert response.url == expected_redirect
+
+
+@pytest.mark.django_db
+def test_action_condition_note_dialog_allows_authorized_get(
+    client, user_can_change_projectobjectivecondition, project_objective_condition
+):
+    url = reverse(
+        "projects:action_condition_note_dialog", args=[project_objective_condition.id]
+    )
+    response = client.get(url)
+
+    assert response.status_code == 200
+    content = response.content.decode()
+    assert "Edit condition note" in content
+    assert f'condition-note-{project_objective_condition.id}' in content
+
+
+@pytest.mark.django_db
+def test_action_condition_note_dialog_close_returns_empty_root(
+    client, user_can_change_projectobjectivecondition, project_objective_condition
+):
+    url = (
+        reverse(
+            "projects:action_condition_note_dialog",
+            args=[project_objective_condition.id],
+        )
+        + "?close=1"
+    )
+    response = client.get(url)
+
+    assert response.status_code == 200
+    assert response.content.decode().strip() == '<div id="note-dialog-root"></div>'
+
+
+@pytest.mark.django_db
+def test_action_update_condition_note_denies_user_without_permission(
+    client, user_without_permissions, project_objective_condition
+):
+    url = reverse(
+        "projects:action_update_condition_note", args=[project_objective_condition.id]
+    )
+    response = client.generic(
+        "PUT",
+        url,
+        data="note=updated",
+        content_type="application/x-www-form-urlencoded",
+    )
+
+    assert response.status_code == 302
+    expected_redirect = f"{reverse('login')}?next={url}"
+    assert response.url == expected_redirect
+
+
+@pytest.mark.django_db
+def test_action_update_condition_note_rejects_non_put_method(
+    client, user_can_change_projectobjectivecondition, project_objective_condition
+):
+    url = reverse(
+        "projects:action_update_condition_note", args=[project_objective_condition.id]
+    )
+    response = client.get(url)
+
+    assert response.status_code == 405
+
+
+@pytest.mark.django_db
+def test_action_update_condition_note_allows_authorized_put_and_updates_note(
+    client, user_can_change_projectobjectivecondition, project_objective_condition
+):
+    assert project_objective_condition.note == ""
+
+    url = reverse(
+        "projects:action_update_condition_note", args=[project_objective_condition.id]
+    )
+    response = client.generic(
+        "PUT",
+        url,
+        data="note=updated+note",
+        content_type="application/x-www-form-urlencoded",
+    )
+
+    project_objective_condition.refresh_from_db()
+    assert response.status_code == 200
+    assert project_objective_condition.note == "updated note"
+    assert f'id="condition-{project_objective_condition.id}"' in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_action_update_condition_note_allows_clearing_note(
+    client, user_can_change_projectobjectivecondition, project_objective_condition
+):
+    project_objective_condition.note = "existing"
+    project_objective_condition.save(update_fields=["note"])
+
+    url = reverse(
+        "projects:action_update_condition_note", args=[project_objective_condition.id]
+    )
+    response = client.generic(
+        "PUT",
+        url,
+        data="note=",
+        content_type="application/x-www-form-urlencoded",
+    )
+
+    project_objective_condition.refresh_from_db()
+    assert response.status_code == 200
+    assert project_objective_condition.note == ""
+
+
+# Test that malicious HTML is sanitised from notes
+
+@pytest.mark.django_db
+def test_action_update_condition_note_sanitises_malicious_html(
+    client, user_can_change_projectobjectivecondition, project_objective_condition
+):
+    malicious_note = '<script>alert(1)</script><img src=x onerror=alert(2)><a href="http://safe" onclick="evil()">link</a><strong>ok</strong>'
+    url = reverse(
+        "projects:action_update_condition_note", args=[project_objective_condition.id]
+    )
+    response = client.generic(
+        "PUT",
+        url,
+        data=f"note={malicious_note}",
+        content_type="application/x-www-form-urlencoded",
+    )
+    project_objective_condition.refresh_from_db()
+    assert response.status_code == 200
+    # script and img should be stripped, onclick removed, strong and a[href] remain
+    assert "<script" not in project_objective_condition.note
+    assert "<img" not in project_objective_condition.note
+    assert "onclick" not in project_objective_condition.note
+    assert "<strong>ok</strong>" in project_objective_condition.note
+    assert '<a href="http://safe"' in project_objective_condition.note
 
 
 # Check that the project list and project detail pages are correctly public/private,

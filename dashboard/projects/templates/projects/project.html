@@ -6,6 +6,8 @@
 {% block extrahead %}
   <link rel="stylesheet" href="{% static "project-detail.css" %}">
   <script src="{% static 'htmx.min.js' %}"></script>
+  <script src="{% static 'tinymce/tinymce.min.js' %}" defer></script>
+  <script src="{% static 'condition-note-editor.js' %}" defer></script>
   <script src="{% static 'form-dirty.js' %}" defer></script>
 {% endblock %}
 
@@ -22,20 +24,20 @@
     background: #9fc68f !important;
     font-weight: 600;
   }
-  
+
   {% for pg in projectobjectivegroups %}
   /* {{ pg.grouper }} tab active when its panel is targeted (direct click) */
   #container:has(#{{ pg.grouper|slugify }}:target) .tab-bar a[href="#{{ pg.grouper|slugify }}"] {
     background: #9fc68f !important;
     font-weight: 600;
   }
-  
+
   /* {{ pg.grouper }} tab active when an element inside is targeted (deep link) */
   #container:has(#{{ pg.grouper|slugify }} :target) .tab-bar a[href="#{{ pg.grouper|slugify }}"] {
     background: #9fc68f !important;
     font-weight: 600;
   }
-  
+
   /* Hide overview when another panel is active */
   #container:has(#{{ pg.grouper|slugify }}:target) .tab-bar a[href="#tab-overview"],
   #container:has(#{{ pg.grouper|slugify }} :target) .tab-bar a[href="#tab-overview"] {
@@ -107,5 +109,7 @@
   </nav>
 
 </div>
+
+<div id="note-dialog-root"></div>
 
 {% endblock content %}
